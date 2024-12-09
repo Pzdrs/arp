@@ -37,6 +37,8 @@ L3	EQU 0x76
 L4	EQU 0x77
 L5	EQU 0x78
 	
+case_tmp    EQU	0x79
+	
     
 ;**********************************************************************
 PSECT PROGMEM0,delta=2, abs
@@ -78,17 +80,22 @@ uart_rx_isr:
     GOTO    check_strings
     
     RETURN
-; Pokud je ve working reg velky pismeno tak z nej udela maly pismeno
-to_lower:
+; Clearneme bit 5 coz z malyho pismena udela velky, velky zustane velky a ostatni
+; znaky jsou irrelevant proste se offsetnou ale to je jedno
+tweak_case:
+    MOVWF   case_tmp
+    ; Maska 0b11011111 - clearne bit 5
+    movlw   ~(1 << 5)       
+    andwf   case_tmp,W
     return
 ; Kontrola jestli prvni a ctvrty pismeno jsou equal
 check_strings:    
     MOVF    L0, W
-    CALL    to_lower
+    CALL    tweak_case
     MOVWF   tmp
 
     MOVF    L3, W
-    CALL    to_lower
+    CALL    tweak_case
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L1_L4
@@ -97,11 +104,11 @@ check_strings:
 ; Kontrola jestli druhy a paty pismeno jsou equal
 check_L1_L4:
     MOVF    L1, W
-    CALL    to_lower
+    CALL    tweak_case
     MOVWF   tmp
 
     MOVF    L4, W
-    CALL    to_lower
+    CALL    tweak_case
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L2_L5
@@ -110,11 +117,11 @@ check_L1_L4:
 ; Kontrola jestli treti a sesty pismeno jsou equal
 check_L2_L5:
     MOVF    L2, W
-    CALL    to_lower
+    CALL    tweak_case
     MOVWF   tmp
 
     MOVF    L5, W
-    CALL    to_lower
+    CALL    tweak_case
     SUBWF   tmp, W
     BTFSC   STATUS, 2 
     GOTO    eval_mismatches
