@@ -42,15 +42,15 @@ L5	EQU 0x78
 PSECT PROGMEM0,delta=2, abs
 
 RESETVEC:
-    ORG		0x00 
-    PAGESEL	Setup
-    GOTO	Setup
+    ORG	    0x00 
+    PAGESEL Setup
+    GOTO    Setup
 	
-    ORG		0x04
+    ORG	    0x04
     ; Zajima nas jenom UART RX interrupt
-    BANKSEL	PIR1
-    BTFSC	PIR1,5    
-    CALL	uart_rx_isr
+    BANKSEL PIR1
+    BTFSC   PIR1,5    
+    CALL    uart_rx_isr
     RETFIE
 
 uart_rx_isr:
@@ -78,13 +78,17 @@ uart_rx_isr:
     GOTO    check_strings
     
     RETURN
-   
+; Pokud je ve working reg velky pismeno tak z nej udela maly pismeno
+to_lower:
+    return
 ; Kontrola jestli prvni a ctvrty pismeno jsou equal
 check_strings:    
     MOVF    L0, W
+    CALL    to_lower
     MOVWF   tmp
 
     MOVF    L3, W
+    CALL    to_lower
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L1_L4
@@ -93,9 +97,11 @@ check_strings:
 ; Kontrola jestli druhy a paty pismeno jsou equal
 check_L1_L4:
     MOVF    L1, W
+    CALL    to_lower
     MOVWF   tmp
 
     MOVF    L4, W
+    CALL    to_lower
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L2_L5
@@ -104,9 +110,11 @@ check_L1_L4:
 ; Kontrola jestli treti a sesty pismeno jsou equal
 check_L2_L5:
     MOVF    L2, W
+    CALL    to_lower
     MOVWF   tmp
 
     MOVF    L5, W
+    CALL    to_lower
     SUBWF   tmp, W
     BTFSC   STATUS, 2 
     GOTO    eval_mismatches
@@ -132,12 +140,12 @@ eval_mismatches:
 Letters_pass:
     BANKSEL TXREG
     
-    MOVLW	'O'
-    MOVWF	TXREG
-    CALL	uart_tx_done
+    MOVLW   'O'
+    MOVWF   TXREG
+    CALL    uart_tx_done
     
-    MOVLW	'K'
-    MOVWF	TXREG
+    MOVLW   'K'
+    MOVWF   TXREG
     
     GOTO    Cleanup
 Letters_fail:
@@ -165,46 +173,46 @@ Cleanup:
     RETFIE
 uart_tx_done:
     BTFSS   TXSTA,1
-    GOTO uart_tx_done
+    GOTO    uart_tx_done
     RETURN
 Setup:	
-    MOVLB	1		;Banka1
-    MOVLW	01101000B	;4MHz Medium
-    MOVWF	OSCCON		;nastaveni hodin
+    MOVLB   1		;Banka1
+    MOVLW   01101000B	;4MHz Medium
+    MOVWF   OSCCON		;nastaveni hodin
 
-    CALL	Config_IOs
+    CALL    Config_IOs
 
     ;config UART
-    MOVLB	3		;Banka3 s UART
-    BSF		TXSTA,5		;TXEN	;povoleni odesilani dat
-    BSF		TXSTA,2		;BRGH	;jiny zpusob vypoctu baudrate
-    BSF		RCSTA,4	;CREN	;povoleni prijimani dat
+    MOVLB   3		;Banka3 s UART
+    BSF	    TXSTA,5		;TXEN	;povoleni odesilani dat
+    BSF	    TXSTA,2		;BRGH	;jiny zpusob vypoctu baudrate
+    BSF	    RCSTA,4	;CREN	;povoleni prijimani dat
     
     ; baud rate generator
-    CLRF	SPBRGH
-    MOVLW	25		;25 => 9615 bps s BRGH pri Fosc = 4MHz
-    MOVWF	SPBRGL
+    CLRF    SPBRGH
+    MOVLW   25		;25 => 9615 bps s BRGH pri Fosc = 4MHz
+    MOVWF   SPBRGL
     
     ; zapnu global interrupt
-    BSF		INTCON,7
+    BSF	    INTCON,7
     ; zapnu peripherial interrupty
-    BSF		INTCON,6
+    BSF	    INTCON,6
     ; zapnu interrupt na UART receive
-    MOVLB	1
-    BSF		PIE1,5
+    MOVLB   1
+    BSF	    PIE1,5
     
     ; jelikoz to je incrementuju tak si projistotu udelam init clear
-    CLRF	LIDX
-    CLRF	MISMATCHES
+    CLRF    LIDX
+    CLRF    MISMATCHES
     
-    MOVLB	3
+    MOVLB   3
     ; serial port enable
-    BSF		RCSTA,7
+    BSF	    RCSTA,7
 
 ; Loop tady musi bejt jinak to nefunguje idk why
 Loop:
-    GOTO	Loop
+    GOTO    Loop
 
 	
-#include	"Config_IOs.inc"
+#include    "Config_IOs.inc"
 END
