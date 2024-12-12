@@ -99,7 +99,7 @@ check_strings:
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L1_L4
-    INCFSZ  MISMATCHES, 1
+    INCF    MISMATCHES, 1
 
 ; Kontrola jestli druhy a paty pismeno jsou equal
 check_L1_L4:
@@ -112,7 +112,7 @@ check_L1_L4:
     SUBWF   tmp, W
     BTFSC   STATUS, 2
     GOTO    check_L2_L5
-    INCFSZ  MISMATCHES, 1
+    INCF    MISMATCHES, 1
 
 ; Kontrola jestli treti a sesty pismeno jsou equal
 check_L2_L5:
@@ -125,7 +125,7 @@ check_L2_L5:
     SUBWF   tmp, W
     BTFSC   STATUS, 2 
     GOTO    eval_mismatches
-    INCFSZ  MISMATCHES, 1
+    INCF    MISMATCHES, 1
 
 ; Vyhodnoceni
 ; Nebyl jsem schopnej to udelat pres jeden subtract a carry flag magic
