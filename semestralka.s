@@ -85,9 +85,9 @@ uart_rx_isr:
 tweak_case:
     MOVWF   case_tmp
     ; Maska 0b11011111 - clearne bit 5
-    movlw   ~(1 << 5)       
-    andwf   case_tmp,W
-    return
+    MOVLW   ~(1 << 5)       
+    ANDWF   case_tmp,W
+    RETURN
 ; Kontrola jestli prvni a ctvrty pismeno jsou equal
 check_strings:    
     MOVF    L0, W
